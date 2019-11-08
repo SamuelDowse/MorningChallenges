@@ -1,0 +1,249 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Calculations x50</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="../assets/css/noscript.css" /></noscript>
+
+		<style>
+			.numberBox {
+				width: auto !important;
+				font-size: 70px;
+			}
+			.inputBox {
+				font-size: 70px;
+				border: 0px;
+				outline: none;
+				border-bottom: 1px solid grey;
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<div class="inner">
+
+							<!-- Logo -->
+								<a href="../index.html" class="logo">
+									<span class="symbol"><img src="../images/logo.svg" alt="" /></span><span class="title">Calculations x50</span>
+								</a>
+
+							<!-- Nav -->
+								<nav>
+									<ul>
+										<li><a href="#menu">Menu</a></li>
+									</ul>
+								</nav>
+
+						</div>
+					</header>
+
+				<!-- Menu -->
+					<nav id="menu">
+						<h2>Menu</h2>
+						<ul>
+							<li><a href="../index.html">Home</a></li>
+							<li><a href="../generic.html">Random</a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+							<p id="introduction">
+								When you are ready, click the start button.<br/>
+								Your timer will start and your cursor will automatically focus on the "answer" box.<br/>
+								Simply type your answer, if it's correct it will move you on to the next equation.<br/>
+								Expect multiplication, addition, subtraction and division equations.
+							</p>
+							<label id="finalTimeBox" style="display: none;">Time elapsed: <span id="finalTime"></span></label>
+							<button id="startButton" onclick="startTimer();">
+								Start
+							</button>
+							<label id="timer" class="numberBox" style="display:none;">3</label>
+							<table id="equationTable" style="display:none;">
+								<tr>
+									<td colspan="5"><span id="numberCount">0</span> of 50</td>
+								</tr>
+								<tr style="background-color: white;">
+									<td>
+										<label id="firstNumber" class="numberBox"></label>
+									</td>
+									<td>
+										<label id="equation" class="numberBox"></label>
+									</td>
+									<td>
+										<label id="secondNumber" class="numberBox"></label>
+									</td>
+									<td>
+										<label class="numberBox">=</label>
+									</td>
+									<td>
+										<input id="userInput" class="inputBox" onkeyup="this.value=this.value.replace(/[^\d]/,'');checkAnswer(this.value);"></input>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+
+					<style>
+						.numberBox {
+							width: auto !important;
+							font-size: 70px;
+						}
+						.inputBox {
+							font-size: 70px;
+							border: 0px;
+							outline: none;
+							border-bottom: 1px solid grey;
+						}
+					</style>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<div class="inner">
+							<section>
+								<h2>Get in touch</h2>
+								<form method="post" action="mailto:Samuel.Dowse@vodafone.com">
+									<div class="fields">
+										<div class="field">
+											<textarea name="message" id="message" placeholder="Message"></textarea>
+										</div>
+									</div>
+									<ul class="actions">
+										<li><input type="submit" value="Send" class="primary" /></li>
+									</ul>
+								</form>
+							</section>
+							<section>
+								<h2>Follow</h2>
+								<ul class="icons">
+									<li><a href="" class="icon brands style2 fa-github"><span class="label">GitHub</span></a></li>
+									<li><a href="mailto:Samuel.Dowse@vodafone.com" class="icon solid style2 fa-envelope"><span class="label">Email</span></a></li>
+								</ul>
+							</section>
+							<ul class="copyright">
+								<li>&copy; Samuel Dowse. All rights reserved</li>
+							</ul>
+						</div>
+					</footer>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="../assets/js/jquery.min.js"></script>
+			<script src="../assets/js/browser.min.js"></script>
+			<script src="../assets/js/breakpoints.min.js"></script>
+			<script src="../assets/js/util.js"></script>
+			<script src="../assets/js/main.js"></script>
+			<script>
+				var startTime, interval;
+
+				function start(){
+    				startTime = Date.now();
+    				interval = setInterval(function(){
+        				updateDisplay(Date.now() - startTime);
+    				});
+				}
+
+				function stop(){
+				    clearInterval(interval);
+				}
+
+				function updateDisplay(currentTime){
+					console.log(currentTime);
+				    document.getElementById('finalTime').innerHTML = msToTime(currentTime);
+				}
+
+				function startTimer() {
+					document.getElementById('introduction').style.display = 'none';
+					document.getElementById('startButton').style.display = 'none';
+					document.getElementById('finalTimeBox').style.display = 'none';
+					document.getElementById('timer').style.display = '';
+					startCountdown();
+				}
+
+				function startCountdown() {
+					if (document.getElementById('timer').innerHTML == 0) {
+						document.getElementById('timer').style.display = 'none';
+						document.getElementById('timer').innerHTML = '3';
+						document.getElementById('equationTable').style.display = '';
+						generateCalculations();
+						start();
+					} else {
+						setTimeout(function() {
+							document.getElementById('timer').innerHTML = document.getElementById('timer').innerHTML - 1;
+							startCountdown();
+						}, 1000);
+					}
+				}
+
+				function generateCalculations() {
+					if (parseInt(document.getElementById('numberCount').innerHTML) == 50) {
+						document.getElementById('introduction').style.display = '';
+						document.getElementById('startButton').style.display = '';
+						document.getElementById('equationTable').style.display = 'none';
+						stop();
+						document.getElementById('finalTimeBox').style.display = '';
+					}
+
+					var min = 1; 
+    				var max = 10;
+    				var equationArray = ['+', '-', 'x', '÷'];
+    				var numberOne = Math.floor(Math.random() * (+max - +min)) + +min;
+    				var numberTwo = Math.floor(Math.random() * (+max - +min)) + +min;
+    				var equationSymbol = equationArray[Math.floor(Math.random() * equationArray.length)];
+
+    				if (equationSymbol == '÷') {
+						document.getElementById('firstNumber').innerHTML = numberOne * numberTwo;
+						document.getElementById('secondNumber').innerHTML = Math.max(numberOne, numberTwo);
+					} else {
+						document.getElementById('firstNumber').innerHTML = Math.max(numberOne, numberTwo);
+						document.getElementById('secondNumber').innerHTML = Math.min(numberOne, numberTwo);
+					}
+					document.getElementById('equation').innerHTML = equationSymbol;
+					document.getElementById('userInput').value = '';
+					document.getElementById('numberCount').innerHTML = parseInt(document.getElementById('numberCount').innerHTML) + 1;
+					document.getElementById('userInput').focus();
+				}
+
+				function checkAnswer(userAnswer) {
+					var answer;
+					switch (document.getElementById('equation').innerHTML){
+						case '+':
+							answer = parseInt(document.getElementById('firstNumber').innerHTML) + parseInt(document.getElementById('secondNumber').innerHTML);
+							break;
+						case '-':
+							answer = parseInt(document.getElementById('firstNumber').innerHTML) - parseInt(document.getElementById('secondNumber').innerHTML);
+							break;
+						case 'x':
+							answer = parseInt(document.getElementById('firstNumber').innerHTML) * parseInt(document.getElementById('secondNumber').innerHTML);
+							break;
+						case '÷':
+							answer = parseInt(document.getElementById('firstNumber').innerHTML) / parseInt(document.getElementById('secondNumber').innerHTML);
+							break;
+					}
+					if (userAnswer == answer) {
+						generateCalculations();
+					}
+				}
+
+				function msToTime(duration) {
+					var milliseconds = parseInt((duration%1000)/100)
+						, seconds = parseInt((duration/1000)%60)
+						, minutes = parseInt((duration/(1000*60))%60);
+
+					minutes = (minutes < 10) ? "0" + minutes : minutes;
+					seconds = (seconds < 10) ? "0" + seconds : seconds;
+
+					return minutes + ":" + seconds + "." + milliseconds;
+				}
+			</script>
+
+	</body>
+</html>

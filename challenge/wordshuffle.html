@@ -1,0 +1,333 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Word Shuffle</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="../assets/css/noscript.css" /></noscript>
+
+		<style>
+			.numberBox {
+				font-size: 70px;
+			}
+			.inputBox {
+				font-size: 70px;
+				border: 0px;
+				outline: none;
+				border-bottom: 1px solid grey;
+			}
+			.circle{
+			    display: block;
+			    color: black;
+			    font-weight: bold;
+			    font-size: 40px;
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<div class="inner">
+
+							<!-- Logo -->
+								<a href="../index.html" class="logo">
+									<span class="symbol"><img src="../images/logo.svg" alt="" /></span><span class="title">Word Shuffle</span>
+								</a>
+
+							<!-- Nav -->
+								<nav>
+									<ul>
+										<li><a href="#menu">Menu</a></li>
+									</ul>
+								</nav>
+
+						</div>
+					</header>
+
+				<!-- Menu -->
+					<nav id="menu">
+						<h2>Menu</h2>
+						<ul>
+							<li><a href="../index.html">Home</a></li>
+							<li><a href="../generic.html">Random</a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+							<p id="introduction">
+								When you are ready, click the start button.<br/>
+								You have 1 minute to solve as many words as possible.<br/>
+								You'll see a jumble of letters slowly rotating around the screen.<br/>
+								Unshuffle the letters to make the word. The higher the level, the longer the word.<br/>
+							</p>
+							<label id="finalTimeBox" style="display: none;">Time elapsed: <span id="finalTime"></span></label>
+							<button id="startButton" onclick="startTimer();">
+								Start
+							</button>
+							<label id="timer" class="numberBox" style="display:none;">3</label>
+							<table id="equationTable" style="display:none;text-align:center;">
+								<tr>
+									<td style="text-align:left;"><span id="numberCount">0</span> of 6</td>
+								</tr>
+								<tr style="background-color: white;border:0px;height:400px;">
+									<td style="height:300px;position:absolute;left:39%;">
+										<div id="moveMe1" class="circle"></div>
+										<div id="moveMe2" class="circle"></div>
+										<div id="moveMe3" class="circle"></div>
+										<div id="moveMe4" class="circle"></div>
+										<div id="moveMe5" class="circle" style="display:none;"></div>
+										<div id="moveMe6" class="circle" style="display:none;"></div>
+										<div id="moveMe7" class="circle" style="display:none;"></div>
+										<div id="moveMe8" class="circle" style="display:none;"></div>
+										<div id="moveMe9" class="circle" style="display:none;"></div>
+									</td>
+								</tr>
+								<tr style="background-color: white;border:0px;">
+									<td>
+										<input id="userInput" class="inputBox" placeholder="answer" style="text-align:center;"/><br /><br />
+										<button onclick="checkAnswer(document.getElementById('userInput').value);">Submit</button>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<div class="inner">
+							<section>
+								<h2>Get in touch</h2>
+								<form method="post" action="mailto:Samuel.Dowse@vodafone.com">
+									<div class="fields">
+										<div class="field">
+											<textarea name="message" id="message" placeholder="Message"></textarea>
+										</div>
+									</div>
+									<ul class="actions">
+										<li><input type="submit" value="Send" class="primary" /></li>
+									</ul>
+								</form>
+							</section>
+							<section>
+								<h2>Follow</h2>
+								<ul class="icons">
+									<li><a href="" class="icon brands style2 fa-github"><span class="label">GitHub</span></a></li>
+									<li><a href="mailto:Samuel.Dowse@vodafone.com" class="icon solid style2 fa-envelope"><span class="label">Email</span></a></li>
+								</ul>
+							</section>
+							<ul class="copyright">
+								<li>&copy; Samuel Dowse. All rights reserved</li>
+							</ul>
+						</div>
+					</footer>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="../assets/js/jquery.min.js"></script>
+			<script src="../assets/js/browser.min.js"></script>
+			<script src="../assets/js/breakpoints.min.js"></script>
+			<script src="../assets/js/util.js"></script>
+			<script src="../assets/js/main.js"></script>
+			<script>
+				var startTime, interval, userLevel = 1, levelWord;
+
+				function start(){
+    				startTime = Date.now();
+    				interval = setInterval(function(){
+        				updateDisplay(Date.now() - startTime);
+    				});
+				}
+
+				function stop(){
+				    clearInterval(interval);
+				}
+
+				function updateDisplay(currentTime){
+				    document.getElementById('finalTime').innerHTML = msToTime(currentTime);
+				}
+
+				function startTimer() {
+					document.getElementById('introduction').style.display = 'none';
+					document.getElementById('startButton').style.display = 'none';
+					document.getElementById('finalTimeBox').style.display = 'none';
+					document.getElementById('timer').style.display = '';
+					startCountdown();
+				}
+
+				function startCountdown() {
+					if (document.getElementById('timer').innerHTML == 0) {
+						document.getElementById('timer').style.display = 'none';
+						document.getElementById('timer').innerHTML = '3';
+						document.getElementById('equationTable').style.display = '';
+						userLevel = 1;
+						generateCalculations();
+						start();
+					} else {
+						setTimeout(function() {
+							document.getElementById('timer').innerHTML = document.getElementById('timer').innerHTML - 1;
+							startCountdown();
+						}, 1000);
+					}
+				}
+
+				var ElementRevolver = (function() {
+					function getPosition(settings, ellapsedTime) {
+						var angle = getAngle(settings, ellapsedTime);
+						return {
+							x: Math.round(settings.center.x + settings.radius * Math.cos(angle)),
+							y: Math.round(settings.center.y + settings.radius * Math.sin(angle))
+						};
+					}
+					function getAngle(settings, ellapsedTime) {
+						return ellapsedTime / settings.interval * 2 * Math.PI * settings.direction - settings.startPositionRad;
+					}
+					function start(id, settings) {
+						document.getElementById(id).style.display = '';
+						var el = document.getElementById(id),
+						startTime = (new Date()).getTime(),
+						width = el.offsetWidth,
+						height = el.offsetHeight;
+						if(el['#rev:tm'] !== null) stop(id);
+							el.style.position = settings.cssPosition || 'absolute';
+						if(!settings.startPositionRad) settings.startPositionRad = settings.startPositionDeg / 180 * Math.PI;
+							el['#rev:tm'] = setInterval(function() {
+								var pos = getPosition(settings, (new Date()).getTime() - startTime);
+								el.style.left = (pos.x - Math.round(width / 2)) + 'px';
+								el.style.top = (pos.y - Math.round(height / 2)) + 'px';
+							}, settings.updateInterval);
+						if(settings.iterations > -1) setTimeout(function() {
+							stop(id);
+						}, settings.iterations * settings.interval);
+					}
+					function stop(id) {
+						var el = document.getElementById(id);
+						if(el['#rev:tm'] === null) return;
+							clearInterval(el['#rev:tm']);
+						el['#rev:tm'] = null;
+					}
+					return {
+						start: start,
+						stop: stop
+					};
+				})();
+
+				function mixWord(wordToMix) {
+					levelWord = wordToMix;
+					levelWordArray = levelWord.split('');
+					document.getElementById('moveMe1').innerHTML = levelWordArray.splice(Math.floor(Math.random() * levelWordArray.length), 1);
+					document.getElementById('moveMe2').innerHTML = levelWordArray.splice(Math.floor(Math.random() * levelWordArray.length), 1);
+					document.getElementById('moveMe3').innerHTML = levelWordArray.splice(Math.floor(Math.random() * levelWordArray.length), 1);
+					document.getElementById('moveMe4').innerHTML = levelWordArray.splice(Math.floor(Math.random() * levelWordArray.length), 1);
+					document.getElementById('moveMe5').innerHTML = levelWordArray.splice(Math.floor(Math.random() * levelWordArray.length), 1);
+					document.getElementById('moveMe6').innerHTML = levelWordArray.splice(Math.floor(Math.random() * levelWordArray.length), 1);
+					document.getElementById('moveMe7').innerHTML = levelWordArray.splice(Math.floor(Math.random() * levelWordArray.length), 1);
+					document.getElementById('moveMe8').innerHTML = levelWordArray.splice(Math.floor(Math.random() * levelWordArray.length), 1);
+					document.getElementById('moveMe9').innerHTML = levelWordArray.splice(Math.floor(Math.random() * levelWordArray.length), 1);
+				}
+
+				function generateCalculations() {
+					var min = 0;
+					levelWord = 'Preparing Next Word';
+					document.getElementById('numberCount').innerHTML = userLevel;
+					switch(userLevel){
+						case 6:
+							if (userLevel == 6) { 
+								var max = nineLetters.length;
+								var pickedWord = Math.floor(Math.random() * (+max - +min)) + +min;
+								var pickedWord = nineLetters[pickedWord];
+								mixWord(pickedWord);
+							}
+							ElementRevolver.start('moveMe9', { radius: 150, center: { x: 200, y: 200 }, interval: 10000, direction: 1, iterations: -1, updateInterval: 5, startPositionDeg: (360 / (userLevel + 3) * 9) });
+						case 5:
+							if (userLevel == 5) { 
+								var max = eightLetters.length;
+								var pickedWord = Math.floor(Math.random() * (+max - +min)) + +min;
+								var pickedWord = eightLetters[pickedWord];
+								mixWord(pickedWord);
+							}
+							ElementRevolver.start('moveMe8', { radius: 150, center: { x: 200, y: 200 }, interval: 10000, direction: 1, iterations: -1, updateInterval: 5, startPositionDeg: (360 / (userLevel + 3) * 8) });
+						case 4:
+							if (userLevel == 4) { 
+								var max = sevenLetters.length;
+								var pickedWord = Math.floor(Math.random() * (+max - +min)) + +min;
+								var pickedWord = sevenLetters[pickedWord];
+								mixWord(pickedWord);
+							}
+							ElementRevolver.start('moveMe7', { radius: 150, center: { x: 200, y: 200 }, interval: 10000, direction: 1, iterations: -1, updateInterval: 5, startPositionDeg: (360 / (userLevel + 3) * 7) });
+						case 3:
+							if (userLevel == 3) { 
+								var max = sixLetters.length;
+								var pickedWord = Math.floor(Math.random() * (+max - +min)) + +min;
+								var pickedWord = sixLetters[pickedWord];
+								mixWord(pickedWord);
+							}
+							ElementRevolver.start('moveMe6', { radius: 150, center: { x: 200, y: 200 }, interval: 10000, direction: 1, iterations: -1, updateInterval: 5, startPositionDeg: (360 / (userLevel + 3) * 6) });
+						case 2:
+							if (userLevel == 2) { 
+								var max = fiveLetters.length;
+								var pickedWord = Math.floor(Math.random() * (+max - +min)) + +min;
+								var pickedWord = fiveLetters[pickedWord];
+								mixWord(pickedWord);
+							}
+							ElementRevolver.start('moveMe5', { radius: 150, center: { x: 200, y: 200 }, interval: 10000, direction: 1, iterations: -1, updateInterval: 5, startPositionDeg: (360 / (userLevel + 3) * 5) });
+						case 1:
+							if (userLevel == 1) { 
+								var max = fourLetters.length;
+								var pickedWord = Math.floor(Math.random() * (+max - +min)) + +min;
+								var pickedWord = fourLetters[pickedWord];
+								mixWord(pickedWord);
+							}
+							ElementRevolver.start('moveMe1', { radius: 150, center: { x: 200, y: 200 }, interval: 10000, direction: 1, iterations: -1, updateInterval: 5, startPositionDeg: (360 / (userLevel + 3) * 1) });
+							ElementRevolver.start('moveMe2', { radius: 150, center: { x: 200, y: 200 }, interval: 10000, direction: 1, iterations: -1, updateInterval: 5, startPositionDeg: (360 / (userLevel + 3) * 2) });
+							ElementRevolver.start('moveMe3', { radius: 150, center: { x: 200, y: 200 }, interval: 10000, direction: 1, iterations: -1, updateInterval: 5, startPositionDeg: (360 / (userLevel + 3) * 3) });
+							ElementRevolver.start('moveMe4', { radius: 150, center: { x: 200, y: 200 }, interval: 10000, direction: 1, iterations: -1, updateInterval: 5, startPositionDeg: (360 / (userLevel + 3) * 4) });
+							break;
+					}
+				}
+
+				function checkAnswer(userAnswer) {
+					if (userLevel == 6) {
+						document.getElementById('introduction').style.display = '';
+						document.getElementById('startButton').style.display = '';
+						document.getElementById('finalTimeBox').style.display = '';
+						document.getElementById('timer').style.display = 'none';
+						document.getElementById('equationTable').style.display = 'none';
+						stop();
+					}
+					if (levelWord == userAnswer) {
+						userLevel++;
+						document.getElementById('userInput').value = '';
+						generateCalculations();
+					} else {
+						console.log("Wrong Answer");
+					}
+				}
+
+				function msToTime(duration) {
+					var milliseconds = parseInt((duration%1000)/100)
+						, seconds = parseInt((duration/1000)%60)
+						, minutes = parseInt((duration/(1000*60))%60);
+
+					minutes = (minutes < 10) ? "0" + minutes : minutes;
+					seconds = (seconds < 10) ? "0" + seconds : seconds;
+
+					return minutes + ":" + seconds + "." + milliseconds;
+				}
+
+				var fourLetters = ['apex','aqua','back','bomb','buck','buff','bulk','bump','bunk','buzz','cake','camp','comb','cozy','dozy','exam','faux','faze','fizz','flex','flux','foxy','funk','fuzz','gawk','gaze','hawk','haze','hazy','jack','jail','java','jaws','jazz','jeep','jerk','jibe','jinx','jive','jobs','jock','jogs','join','joke','jowl','joys','judo','jugs','juke','jump','junk','jury','just','kick','lazy','lynx','maze','mock','onyx','pack','peck','puck','puff','pump','quad','quay','quid','quip','quiz','wack','waxy','whiz','zinc','zips','zoom'];
+				var fiveLetters = ['jazzy','fuzzy','muzzy','fizzy','whizz','dizzy','pizza','jumpy','jammy','jiffy','junky','quack','quick','jumbo','jumps','quiff','jerky','juicy','klutz','boozy','crazy','hijab','jived','joked','jukes','mixup','quake','qualm','quirk','unzip','woozy','banjo','bezel','blaze','blitz','comic','equip','fazed','flaky','jelly','jerks','jewel','jolly','judge','kazoo','mucky','plaza','waltz','amaze','booze','bumpy','chump','craze','eject','emoji','enjoy','froze','glaze','hazel','knock','knack','mummy','picky','proxy','puffy','puppy','pygmy','quill','unbox','wacky','zebra','admit','admin','black','block'];
+				var sixLetters = ['demons','jazzed','buzzed','puzzle','muzzle','quartz','jockey','hijack','squawk','jackal','quacks','zipped','jabbed','jacket','jammed','jumper','wheezy','joking','zapped','quench','object','sphynx','zombie','frenzy','cheque','chubby'];
+				var sevenLetters = ['interns','enabler','buzzing','muzzled','puzzled','jukebox','quickly','lockjaw','jackpot','jumping','equinox','jamming','jockeys','jabbing','jumbled','quacked','complex','upchuck','jumbled','waxwork','pickaxe','pyjamas','quicker','blazing','checkup'];
+				var eightLetters = ['quotient','absolute','enablers','flapjack','backpack','dazzling','blizzard','bedazzle','squeezed','jackpots','jokingly','knockoff','junkyard','matchbox','juggling','joystick','unjoyful','hijacker','paycheck','equipped','emblazed','chipmunk','jumpsuit'];
+				var nineLetters = ['embezzled','buzzwords','embezzler','paparazzi','flapjacks','fuzziness','blizzards','drizzling','maximised','squeezing','kickboxer','hijacking','grizzlier','equalised','poppycock','unzipping','juxtapose','squawking','objectify','backpacks','blazingly','objective'];
+			</script>
+
+	</body>
+</html>

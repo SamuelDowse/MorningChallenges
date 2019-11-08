@@ -1,0 +1,204 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Low To High</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="../assets/css/noscript.css" /></noscript>
+		<style>
+			.numberBox {
+				font-size: 40px;
+				border: 1px solid black;
+				padding: 5px;
+				font-weight: bold;
+				cursor: pointer;
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<div class="inner">
+
+							<!-- Logo -->
+								<a href="../index.html" class="logo">
+									<span class="symbol"><img src="../images/logo.svg" alt="" /></span><span class="title">Low to High</span>
+								</a>
+
+							<!-- Nav -->
+								<nav>
+									<ul>
+										<li><a href="#menu">Menu</a></li>
+									</ul>
+								</nav>
+
+						</div>
+					</header>
+
+				<!-- Menu -->
+					<nav id="menu">
+						<h2>Menu</h2>
+						<ul>
+							<li><a href="../index.html">Home</a></li>
+							<li><a href="../generic.html">Random</a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+							<p id="introduction">
+								When you are ready, click the start button.<br/>
+								You'll have a few seconds to look the numbers in the table<br/>
+								After 5 seconds the numbers will disappear!<br/>
+								Click the boxes where the numbers were, from lowest to highest.
+							</p>
+							<label id="finalTimeBox" style="display: none;">Level: <span id="finalTime">1</span></label>
+							<button id="startButton" onclick="startTimer();">
+								Start
+							</button>
+							<label id="timer" class="numberBox" style="display:none;border:0px;">3</label>
+							<table id="equationTable" style="display:none;text-align:center;">
+								
+							</table>
+						</div>
+					</div>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<div class="inner">
+							<section>
+								<h2>Get in touch</h2>
+								<form method="post" action="mailto:Samuel.Dowse@vodafone.com">
+									<div class="fields">
+										<div class="field">
+											<textarea name="message" id="message" placeholder="Message"></textarea>
+										</div>
+									</div>
+									<ul class="actions">
+										<li><input type="submit" value="Send" class="primary" /></li>
+									</ul>
+								</form>
+							</section>
+							<section>
+								<h2>Follow</h2>
+								<ul class="icons">
+									<li><a href="" class="icon brands style2 fa-github"><span class="label">GitHub</span></a></li>
+									<li><a href="mailto:Samuel.Dowse@vodafone.com" class="icon solid style2 fa-envelope"><span class="label">Email</span></a></li>
+								</ul>
+							</section>
+							<ul class="copyright">
+								<li>&copy; Samuel Dowse. All rights reserved</li>
+							</ul>
+						</div>
+					</footer>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="../assets/js/jquery.min.js"></script>
+			<script src="../assets/js/browser.min.js"></script>
+			<script src="../assets/js/breakpoints.min.js"></script>
+			<script src="../assets/js/util.js"></script>
+			<script src="../assets/js/main.js"></script>
+			<script>
+				var startTime, level = 1, currentNumber = 1, highestNumber, locked = true;
+
+				function startTimer() {
+					document.getElementById('introduction').style.display = 'none';
+					document.getElementById('startButton').style.display = 'none';
+					document.getElementById('finalTimeBox').style.display = 'none';
+					document.getElementById('timer').style.display = '';
+					startCountdown();
+				}
+
+				function startCountdown() {
+					if (document.getElementById('timer').innerHTML == 0) {
+						document.getElementById('timer').style.display = 'none';
+						document.getElementById('timer').innerHTML = '3';
+						document.getElementById('equationTable').style.display = '';
+						generateTable();
+					} else {
+						setTimeout(function() {
+							document.getElementById('timer').innerHTML = document.getElementById('timer').innerHTML - 1;
+							startCountdown();
+						}, 1000);
+					}
+				}
+
+				function generateTable() {
+					document.getElementById('finalTimeBox').style.display = '';
+					document.getElementById('finalTime').innerHTML = level;
+					var table = document.getElementById('equationTable');
+					table.innerHTML = '';
+					highestNumber = level + 3;
+					var cellCount = 1;
+					var tempArray = [];
+					for (var i = 1; i <= highestNumber; i++){
+						tempArray.push(i);
+					}
+
+					if (highestNumber <= 4) {
+						cellCount = 2
+					} else if (highestNumber <= 9) {
+						cellCount = 3
+					} else if (highestNumber <= 16) {
+						cellCount = 4
+					} else if (highestNumber <= 25) {
+						cellCount = 5;
+					}
+					for (var a = 0; a < cellCount; a++) {
+						if (tempArray.length == 0) { break; }
+						var row = table.insertRow(-1);
+						row.style.backgroundColor = 'white';
+						row.style.border = '0px';
+						for (var b = 0; b < cellCount; b++) {
+							if (tempArray.length == 0) { break; }
+							var cell = row.insertCell(-1);
+							cell.style.width = 100 / cellCount + "%";
+							var generatedNumber = tempArray.splice(Math.floor(Math.random() * tempArray.length), 1);
+							cell.innerHTML = "<label id='" + generatedNumber + "' name='numberHider' class='numberBox' onclick='checkNumber("+generatedNumber+");'>" + generatedNumber + "</label>";
+						}
+					}
+
+					setTimeout(function() {
+						var elementsToHide = document.getElementsByName('numberHider');
+						for (var i = 0; i < elementsToHide.length; i++){
+							elementsToHide[i].innerHTML = '&nbsp;';
+							locked = false;
+						}
+					}, 5000);
+				}
+
+				function checkNumber(clickedNumber) {
+					if (locked){
+						return false;
+					}
+					if (clickedNumber == currentNumber) {
+						document.getElementById(clickedNumber).innerHTML = clickedNumber;
+						currentNumber++;
+					} else {
+						document.getElementById('introduction').style.display = '';
+						document.getElementById('startButton').style.display = '';
+						document.getElementById('finalTimeBox').style.display = '';
+						document.getElementById('finalTime').innerHTML = level;
+						document.getElementById('timer').style.display = 'none';
+						document.getElementById('equationTable').style.display = 'none';
+						level = 1;
+						currentNumber = 1;
+					}
+					if (clickedNumber == highestNumber) {
+						level++;
+						locked = true;
+						document.getElementById('finalTime').innerHTML = level;
+						currentNumber = 1;
+						generateTable();
+					}
+				}
+			</script>
+	</body>
+</html>

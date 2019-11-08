@@ -1,0 +1,260 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Head Count</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="../assets/css/noscript.css" /></noscript>
+		<style>
+			.numberBox {
+				width: auto !important;
+				font-size: 70px;
+			}
+			.inputBox {
+				font-size: 50px;
+				border: 0px;
+				outline: none;
+				border-bottom: 1px solid grey;
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<div class="inner">
+
+							<!-- Logo -->
+								<a href="../index.html" class="logo">
+									<span class="symbol"><img src="../images/logo.svg" alt="" /></span><span class="title">Head Count</span>
+								</a>
+
+							<!-- Nav -->
+								<nav>
+									<ul>
+										<li><a href="#menu">Menu</a></li>
+									</ul>
+								</nav>
+
+						</div>
+					</header>
+
+				<!-- Menu -->
+					<nav id="menu">
+						<h2>Menu</h2>
+						<ul>
+							<li><a href="../index.html">Home</a></li>
+							<li><a href="../generic.html">Random</a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+							<p id="introduction">
+								When you are ready, click the start button.<br/>
+								Assume there are no people on the train to start with, keep track of how many get on and off the train.<br/>
+								Simply type how many remain on the train in to the answer box and submit.<br />
+								The speed will increase with each correct answer.
+							</p>
+							<label id="finalTimeBox" style="display: none;">You reached level: <span id="finalTime"></span></label>
+							<button id="startButton" onclick="startTimer();">
+								Start
+							</button>
+							<label id="timer" class="numberBox" style="display:none;">3</label>
+							<table id="equationTable" style="display:none;">
+								<tr>
+									<td colspan="3">Round <span id="numberCount">1</span></td>
+								</tr>
+								<tr style="border:0px;background-color:white;">
+									<td style="width:40%;">
+										<div style="position:relative;overflow:hidden;height:150px;">
+											<div id="peopleIn" style="position:absolute;left:-300px;max-height:80px;top:50px;overflow:hidden;">
+												<img id="stickman1" src="../images/stickman.png" style="height:75px;"/>
+												<img id="stickman2" src="../images/stickman.png" style="height:75px;"/>
+												<img id="stickman3" src="../images/stickman.png" style="height:75px;"/>
+											</div>
+										</div>
+									</td>
+									<td style="width:20%;">
+										<img src="../images/train.png" style="height:150px;"/>
+									</td>
+									<td style="width:40%;">
+										<div style="position:relative;overflow:hidden;height:150px;">
+											<div id="peopleOut" style="position:absolute;left:-300px;max-height:80px;top:50px;overflow:hidden;">
+												<img id="stickman4" src="../images/stickman.png" style="height:75px;"/>
+												<img id="stickman5" src="../images/stickman.png" style="height:75px;"/>
+												<img id="stickman6" src="../images/stickman.png" style="height:75px;"/>
+											</div>
+										</div>
+									</td>
+								</tr>
+								<tr id="answerRow" style="border:0px;background-color:white;display:none;">
+									<td colspan="3">
+										<input id="userInput" class="inputBox" placeholder="answer" onkeyup="this.value=this.value.replace(/[^\d]/,'');"></input>
+										<button onclick="checkAnswer(document.getElementById('userInput').value);">Submit</button>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<div class="inner">
+							<section>
+								<h2>Get in touch</h2>
+								<form method="post" action="mailto:Samuel.Dowse@vodafone.com">
+									<div class="fields">
+										<div class="field">
+											<textarea name="message" id="message" placeholder="Message"></textarea>
+										</div>
+									</div>
+									<ul class="actions">
+										<li><input type="submit" value="Send" class="primary" /></li>
+									</ul>
+								</form>
+							</section>
+							<section>
+								<h2>Follow</h2>
+								<ul class="icons">
+									<li><a href="" class="icon brands style2 fa-github"><span class="label">GitHub</span></a></li>
+									<li><a href="mailto:Samuel.Dowse@vodafone.com" class="icon solid style2 fa-envelope"><span class="label">Email</span></a></li>
+								</ul>
+							</section>
+							<ul class="copyright">
+								<li>&copy; Samuel Dowse. All rights reserved</li>
+							</ul>
+						</div>
+					</footer>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="../assets/js/jquery.min.js"></script>
+			<script src="../assets/js/browser.min.js"></script>
+			<script src="../assets/js/breakpoints.min.js"></script>
+			<script src="../assets/js/util.js"></script>
+			<script src="../assets/js/main.js"></script>
+
+			<script>
+				var peopleIn = 0, peopleOut = 0, totalRemain = 0;
+				var peopleRound = 0;
+				var speed = 500;
+				var superSpeed = 2000;
+				var userLevel = 1;
+
+				function startTimer() {
+					document.getElementById('introduction').style.display = 'none';
+					document.getElementById('startButton').style.display = 'none';
+					document.getElementById('timer').style.display = '';
+					startCountdown();
+				}
+
+				function startCountdown() {
+					if (document.getElementById('timer').innerHTML == 0) {
+						document.getElementById('timer').style.display = 'none';
+						document.getElementById('timer').innerHTML = '3';
+						document.getElementById('equationTable').style.display = '';
+						movePeople();
+					} else {
+						setTimeout(function() {
+							document.getElementById('timer').innerHTML = document.getElementById('timer').innerHTML - 1;
+							startCountdown();
+						}, 1000);
+					}
+				}
+
+				function movePeople() {
+					if (peopleRound == 7) {
+						document.getElementById('answerRow').style.display = '';
+						peopleRound = 0;
+						peopleIn = 0;
+						peopleOut = 0;
+						return;
+					}
+					document.getElementById('userInput').value = '';
+					document.getElementById('userInput').style.color = '#585858';
+					document.getElementById('answerRow').style.display = 'none';
+					document.getElementById('peopleIn').style.left = '-300px';
+					document.getElementById('peopleOut').style.left = '-300px';
+					document.getElementById('stickman1').style.display = '';
+					document.getElementById('stickman2').style.display = '';
+					document.getElementById('stickman3').style.display = '';
+					document.getElementById('stickman4').style.display = '';
+					document.getElementById('stickman5').style.display = '';
+					document.getElementById('stickman6').style.display = '';
+
+					var peopleInCheck = 0;
+    				var peopleOutCheck = 10;
+    				var minPeople = 1;
+    				var maxPeople = 4;
+    				var randomNumber = Math.floor(Math.random() * (+peopleOutCheck - +peopleInCheck)) + +peopleInCheck;
+    				var randomPeople = Math.floor(Math.random() * (+maxPeople - +minPeople)) + +minPeople;
+
+    				switch (randomPeople) {
+    					case 1:
+    						document.getElementById('stickman1').style.display = 'none';
+							document.getElementById('stickman2').style.display = 'none';
+							document.getElementById('stickman4').style.display = 'none';
+							document.getElementById('stickman5').style.display = 'none';
+    						break;
+    					case 2:
+    						document.getElementById('stickman1').style.display = 'none';
+							document.getElementById('stickman4').style.display = 'none';
+    						break;
+    					case 3:
+    						break;
+    				}
+
+    				if (totalRemain - randomPeople < 0) {
+    					randomNumber = 8;
+    				}
+
+    				if (randomNumber > 5) {
+    					$("#peopleIn").animate({
+    						left:'100%'
+    					}, superSpeed, function() {
+    						setTimeout( function(){ movePeople(); }, speed)
+    					});
+    					peopleIn += randomPeople;
+    				} else {
+    					$("#peopleOut").animate({
+    						left:'100%'
+    					}, superSpeed, function() {
+    						setTimeout( function(){ movePeople(); }, speed)
+    					});
+    					peopleOut += randomPeople;
+    				}
+    				peopleRound++;
+    				totalRemain = peopleIn - peopleOut;
+				}
+
+				function checkAnswer(userAnswer) {
+					if (userAnswer == totalRemain) {
+						if (speed == 0) {
+							superSpeed = superSpeed - 100;
+						} else {
+							speed = speed - 100;
+						}
+						userLevel++;
+						totalRemain = 0;
+						document.getElementById('numberCount').innerHTML = userLevel;
+						document.getElementById('userInput').value = 'Correct';
+						document.getElementById('userInput').style.color = 'green';
+						setTimeout( function(){ movePeople(); }, 2000);
+					} else {
+						document.getElementById('introduction').style.display = '';
+						document.getElementById('startButton').style.display = '';
+						document.getElementById('equationTable').style.display = 'none';
+						document.getElementById('finalTime').style.display = '';
+						document.getElementById('finalTime').innerHTML = userLevel;
+					}
+				}
+			</script>
+
+	</body>
+</html>

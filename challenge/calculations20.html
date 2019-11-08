@@ -1,0 +1,307 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Calculations x20</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="../assets/css/noscript.css" /></noscript>
+		<!-- The core Firebase JS SDK is always required and must be listed first -->
+		<script src="/__/firebase/7.2.3/firebase-app.js"></script>
+
+		<!-- TODO: Add SDKs for Firebase products that you want to use
+		     https://firebase.google.com/docs/web/setup#available-libraries -->
+		<script src="/__/firebase/7.2.3/firebase-analytics.js"></script>
+		<script src="/__/firebase/7.2.3/firebase-database.js"></script>
+		<script src="/__/firebase/7.2.3/firebase-storage.js"></script>
+
+		<!-- Initialize Firebase -->
+		<script src="/__/firebase/init.js"></script>
+
+		<style>
+			.numberBox {
+				width: auto !important;
+				font-size: 70px;
+			}
+			.inputBox {
+				font-size: 70px;
+				border: 0px;
+				outline: none;
+				border-bottom: 1px solid grey;
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<div class="inner">
+
+							<!-- Logo -->
+								<a href="../index.html" class="logo">
+									<span class="symbol"><img src="../images/logo.svg" alt="" /></span><span class="title">Calculations x20</span>
+								</a>
+
+							<!-- Nav -->
+								<nav>
+									<ul>
+										<li><a href="#menu">Menu</a></li>
+									</ul>
+								</nav>
+
+						</div>
+					</header>
+
+				<!-- Menu -->
+					<nav id="menu">
+						<h2>Menu</h2>
+						<ul>
+							<li><a href="../index.html">Home</a></li>
+							<li><a href="../generic.html">Random</a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+							<p id="introduction">
+								When you are ready, click the start button.<br/>
+								Your timer will start and your cursor will automatically focus on the "answer" box.<br/>
+								Simply type your answer, if it's correct it will move you on to the next equation.<br/>
+								Expect multiplication, addition and subtraction equations with numbers no larger than 10.
+							</p>
+							<label id="finalTimeBox" style="display: none;">Time elapsed: <span id="finalTime"></span></label>
+							<input id="myUserName" placeholder="My Name Is"/>&nbsp;&nbsp;&nbsp;
+							<button id="startButton" onclick="startTimer();">
+								Start
+							</button>
+							<table id="resultsTable" style="padding-top:10px;">
+								<thead>
+									<tr>
+										<th>Position</th>
+										<th>Name</th>
+										<th>Time</th>
+									</tr>
+								</thead>
+								<tbody id="resultTableBody"></tbody>
+							</table>
+							<label id="timer" class="numberBox" style="display:none;">3</label>
+							<table id="equationTable" style="display:none;">
+								<tr>
+									<td colspan="5"><span id="numberCount">0</span> of 20</td>
+								</tr>
+								<tr style="background-color: white;">
+									<td>
+										<label id="firstNumber" class="numberBox"></label>
+									</td>
+									<td>
+										<label id="equation" class="numberBox"></label>
+									</td>
+									<td>
+										<label id="secondNumber" class="numberBox"></label>
+									</td>
+									<td>
+										<label class="numberBox">=</label>
+									</td>
+									<td>
+										<input id="userInput" class="inputBox" type="number" onkeyup="checkAnswer(this.value);"></input>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<div class="inner">
+							<section>
+								<h2>Get in touch</h2>
+								<form method="post" action="mailto:Samuel.Dowse@vodafone.com">
+									<div class="fields">
+										<div class="field">
+											<textarea name="message" id="message" placeholder="Message"></textarea>
+										</div>
+									</div>
+									<ul class="actions">
+										<li><input type="submit" value="Send" class="primary" /></li>
+									</ul>
+								</form>
+							</section>
+							<section>
+								<h2>Follow</h2>
+								<ul class="icons">
+									<li><a href="" class="icon brands style2 fa-github"><span class="label">GitHub</span></a></li>
+									<li><a href="mailto:Samuel.Dowse@vodafone.com" class="icon solid style2 fa-envelope"><span class="label">Email</span></a></li>
+								</ul>
+							</section>
+							<ul class="copyright">
+								<li>&copy; Samuel Dowse. All rights reserved</li>
+							</ul>
+						</div>
+					</footer>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="../assets/js/jquery.min.js"></script>
+			<script src="../assets/js/browser.min.js"></script>
+			<script src="../assets/js/breakpoints.min.js"></script>
+			<script src="../assets/js/util.js"></script>
+			<script src="../assets/js/main.js"></script>
+			<script>
+				// Set the configuration for your app
+				// TODO: Replace with your project's config object
+				var config = {
+					apiKey: "AIzaSyCvS432rA48TLwjq4OwnZnneQU2BaC4LdE",
+					authDomain: "mymorningchallenges.firebaseapp.com",
+					databaseURL: "https://mymorningchallenges.firebaseio.com",
+					storageBucket: "mymorningchallenges.appspot.com"
+				};
+				if (!firebase.apps.length) {
+		   			firebase.initializeApp(config);
+				}
+
+				var userNameInput = document.getElementById('myUserName').value;
+				var bestTime = 999999999999;
+
+				// Get a reference to the database service
+				var database = firebase.database();
+
+				function getLatestResults() {
+					firebase.database().ref('leaderboard').orderByChild('finishTime').limitToFirst(50).once('value', function(snapshot) {
+						var positionNumber = 1;
+						var table = document.getElementById('resultTableBody');
+						table.innerHTML = "";
+						snapshot.forEach(function(childSnapshot) {
+							var childData = childSnapshot.val();
+							if (childData["gameType"] == "calculations20"){
+								if (childData["userName"] == userNameInput) {
+									bestTime = childData["finishTime"];
+								}
+								var row = table.insertRow(-1);
+								var cell = row.insertCell(-1);
+								cell.innerHTML = positionNumber;
+								var cell = row.insertCell(-1);
+								cell.innerHTML = childData["userName"];
+								var cell = row.insertCell(-1);
+								cell.innerHTML = msToTime(childData["finishTime"]);
+								positionNumber++;
+							}
+						});
+					});
+				}
+
+				getLatestResults();
+
+				var startTime, interval, finishedTime;
+
+				function start(){
+    				startTime = Date.now();
+    				interval = setInterval(function(){
+        				updateDisplay(Date.now() - startTime);
+    				});
+				}
+
+				function stop(){
+				    clearInterval(interval);
+				}
+
+				function updateDisplay(currentTime){
+					finishedTime = currentTime;
+
+				    document.getElementById('finalTime').innerHTML = msToTime(finishedTime);
+				}
+
+				function startTimer() {
+					document.getElementById('introduction').style.display = 'none';
+					document.getElementById('startButton').style.display = 'none';
+					document.getElementById('finalTimeBox').style.display = 'none';
+					document.getElementById('resultsTable').style.display = 'none';
+					document.getElementById('myUserName').style.display = 'none';
+					document.getElementById('timer').style.display = '';
+					startCountdown();
+				}
+
+				function startCountdown() {
+					if (document.getElementById('timer').innerHTML == 0) {
+						document.getElementById('timer').style.display = 'none';
+						document.getElementById('timer').innerHTML = '3';
+						document.getElementById('equationTable').style.display = '';
+						generateCalculations();
+						start();
+					} else {
+						setTimeout(function() {
+							document.getElementById('timer').innerHTML = document.getElementById('timer').innerHTML - 1;
+							startCountdown();
+						}, 1000);
+					}
+				}
+
+				function generateCalculations() {
+					if (parseInt(document.getElementById('numberCount').innerHTML) == 20) {
+						document.getElementById('introduction').style.display = '';
+						document.getElementById('startButton').style.display = '';
+						document.getElementById('equationTable').style.display = 'none';
+						stop();
+						document.getElementById('finalTimeBox').style.display = '';
+						document.getElementById('resultsTable').style.display = '';
+						document.getElementById('myUserName').style.display = '';
+
+						if (finishedTime < bestTime && userNameInput != "") {
+							firebase.database().ref('leaderboard/'+userNameInput.replace(/\s/g,'')).set({
+								userName: userNameInput,
+								finishTime: finishedTime,
+								gameType: "calculations20"
+							});
+						}
+						getLatestResults();
+					}
+
+					var min = 1; 
+    				var max = 10;
+    				var numberOne = Math.floor(Math.random() * (+max - +min)) + +min;
+    				var numberTwo = Math.floor(Math.random() * (+max - +min)) + +min;
+    				var equationArray = ['+', '-', 'x'];
+
+					document.getElementById('firstNumber').innerHTML = Math.max(numberOne, numberTwo);
+					document.getElementById('equation').innerHTML = equationArray[Math.floor(Math.random() * equationArray.length)];
+					document.getElementById('secondNumber').innerHTML = Math.min(numberOne, numberTwo);
+					document.getElementById('userInput').value = '';
+					document.getElementById('numberCount').innerHTML = parseInt(document.getElementById('numberCount').innerHTML) + 1;
+					document.getElementById('userInput').focus();
+				}
+
+				function checkAnswer(userAnswer) {
+					var answer;
+					switch (document.getElementById('equation').innerHTML){
+						case '+':
+							answer = parseInt(document.getElementById('firstNumber').innerHTML) + parseInt(document.getElementById('secondNumber').innerHTML);
+							break;
+						case '-':
+							answer = parseInt(document.getElementById('firstNumber').innerHTML) - parseInt(document.getElementById('secondNumber').innerHTML);
+							break;
+						case 'x':
+							answer = parseInt(document.getElementById('firstNumber').innerHTML) * parseInt(document.getElementById('secondNumber').innerHTML);
+							break;
+					}
+					if (userAnswer == answer) {
+						generateCalculations();
+					}
+				}
+
+				function msToTime(duration) {
+					var milliseconds = parseInt((duration%1000)/100)
+						, seconds = parseInt((duration/1000)%60)
+						, minutes = parseInt((duration/(1000*60))%60);
+
+					minutes = (minutes < 10) ? "0" + minutes : minutes;
+					seconds = (seconds < 10) ? "0" + seconds : seconds;
+
+					return minutes + ":" + seconds + "." + milliseconds;
+				}
+			</script>
+
+	</body>
+</html>

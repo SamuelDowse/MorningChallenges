@@ -1,0 +1,327 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Time Lapse</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="../assets/css/noscript.css" /></noscript>
+
+		<style>
+			.numberBox {
+				width: auto !important;
+				font-size: 70px;
+			}
+			.inputBox {
+				font-size: 70px;
+				border: 0px;
+				outline: none;
+				border-bottom: 1px solid grey;
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<div class="inner">
+
+							<!-- Logo -->
+								<a href="../index.html" class="logo">
+									<span class="symbol"><img src="../images/logo.svg" alt="" /></span><span class="title">Time Lapse</span>
+								</a>
+
+							<!-- Nav -->
+								<nav>
+									<ul>
+										<li><a href="#menu">Menu</a></li>
+									</ul>
+								</nav>
+
+						</div>
+					</header>
+
+				<!-- Menu -->
+					<nav id="menu">
+						<h2>Menu</h2>
+						<ul>
+							<li><a href="../index.html">Home</a></li>
+							<li><a href="../generic.html">Random</a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+							<p id="introduction">
+								When you are ready, click the start button.<br/>
+								Your timer will start and your cursor will automatically focus on the "hours" box.<br/>
+								The challenge here is to figure out the difference in hours and minutes between the two clocks<br />
+								Simply type your answer, if it's correct it will move you on to the next equation.
+							</p>
+							<label id="finalTimeBox" style="display: none;">Time elapsed: <span id="finalTime"></span></label>
+							<button id="startButton" onclick="startTimer();">
+								Start
+							</button>
+							<label id="timer" class="numberBox" style="display:none;">3</label>
+							<div id="questionSection" style="display:none;">
+								<span id="numberCount">0</span> of 10<br />
+								<canvas id="canvas" width="400" height="400" style="background-color:#333"></canvas>
+								<canvas id="canvas2" width="400" height="400" style="background-color:#333"></canvas><br />
+								<input id="hoursInput" class="inputBox" placeholder="hours" onkeyup="this.value=this.value.replace(/[^\d]/,'');checkAnswer();"/>
+								<input id="minutesInput" class="inputBox" placeholder="minutes" onkeyup="this.value=this.value.replace(/[^\d]/,'');checkAnswer();"/>
+							</div>
+						</div>
+					</div>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<div class="inner">
+							<section>
+								<h2>Get in touch</h2>
+								<form method="post" action="mailto:Samuel.Dowse@vodafone.com">
+									<div class="fields">
+										<div class="field">
+											<textarea name="message" id="message" placeholder="Message"></textarea>
+										</div>
+									</div>
+									<ul class="actions">
+										<li><input type="submit" value="Send" class="primary" /></li>
+									</ul>
+								</form>
+							</section>
+							<section>
+								<h2>Follow</h2>
+								<ul class="icons">
+									<li><a href="" class="icon brands style2 fa-github"><span class="label">GitHub</span></a></li>
+									<li><a href="mailto:Samuel.Dowse@vodafone.com" class="icon solid style2 fa-envelope"><span class="label">Email</span></a></li>
+								</ul>
+							</section>
+							<ul class="copyright">
+								<li>&copy; Samuel Dowse. All rights reserved</li>
+							</ul>
+						</div>
+					</footer>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="../assets/js/jquery.min.js"></script>
+			<script src="../assets/js/browser.min.js"></script>
+			<script src="../assets/js/breakpoints.min.js"></script>
+			<script src="../assets/js/util.js"></script>
+			<script src="../assets/js/main.js"></script>
+
+			<script>
+				var firstTime, secondTime, canvas, ctx, radius, hh, mm;
+				var startTime, interval;
+
+				function start(){
+    				startTime = Date.now();
+    				interval = setInterval(function(){
+        				updateDisplay(Date.now() - startTime);
+    				});
+				}
+
+				function stop(){
+				    clearInterval(interval);
+				}
+
+				function updateDisplay(currentTime){
+				    document.getElementById('finalTime').innerHTML = msToTime(currentTime);
+				}
+
+				function startTimer() {
+					document.getElementById('introduction').style.display = 'none';
+					document.getElementById('startButton').style.display = 'none';
+					document.getElementById('finalTimeBox').style.display = 'none';
+					document.getElementById('timer').style.display = '';
+					startCountdown();
+				}
+
+				function startCountdown() {
+					if (document.getElementById('timer').innerHTML == 0) {
+						document.getElementById('timer').style.display = 'none';
+						document.getElementById('timer').innerHTML = '3';
+						document.getElementById('questionSection').style.display = '';
+						generateNewTime();
+						start();
+					} else {
+						setTimeout(function() {
+							document.getElementById('timer').innerHTML = document.getElementById('timer').innerHTML - 1;
+							startCountdown();
+						}, 1000);
+					}
+				}
+
+
+				function generateNewTime() {
+					if (parseInt(document.getElementById('numberCount').innerHTML) == 10) {
+						document.getElementById('introduction').style.display = '';
+						document.getElementById('startButton').style.display = '';
+						document.getElementById('questionSection').style.display = 'none';
+						stop();
+						document.getElementById('finalTimeBox').style.display = '';
+					}
+					firstTime = randomDate(new Date(2012, 0, 1), new Date());
+					secondTime = randomDate(new Date(2012, 0, 1), new Date());
+
+					var fullFirstHours = firstTime.getHours() > 12 ? firstTime.getHours() - 12 : firstTime.getHours();
+					var fullSecondHours = secondTime.getHours() > 12 ? secondTime.getHours() - 12 : secondTime.getHours();
+
+					fullFirstHours = fullFirstHours < 10 ? "0" + fullFirstHours : fullFirstHours;
+					fullSecondHours = fullSecondHours < 10 ? "0" + fullSecondHours : fullSecondHours;
+
+					var fullFirstMinutes = roundup5(firstTime.getMinutes()) < 10 ? "0" + roundup5(firstTime.getMinutes()) : roundup5(firstTime.getMinutes());
+					var fullSecondMinutes = roundup5(secondTime.getMinutes()) < 10 ? "0" + roundup5(secondTime.getMinutes()) : roundup5(secondTime.getMinutes());
+
+					firstTime = new Date("2019-10-21T"+fullFirstHours+":"+fullFirstMinutes);
+					secondTime = new Date("2019-10-21T"+fullSecondHours+":"+fullSecondMinutes);
+
+					var tempOne = firstTime;
+					var tempTwo = secondTime;
+
+					firstTime = new Date(Math.min(tempOne, tempTwo));
+					secondTime = new Date(Math.max(tempOne, tempTwo));
+
+					var diff = new Date(Math.max(firstTime, secondTime)) - new Date(Math.min(firstTime, secondTime));
+					var diff = new Date(diff);
+					var msec = diff;
+					hh = Math.floor(msec / 1000 / 60 / 60);
+					msec -= hh * 1000 * 60 * 60;
+					mm = Math.floor(msec / 1000 / 60);
+					msec -= mm * 1000 * 60;
+
+					canvas = document.getElementById("canvas");
+					ctx = canvas.getContext("2d");
+					ctx.clearRect(0,0,canvas.width,canvas.height);
+					canvas.width = 1; canvas.width = 400;
+					radius = canvas.height / 2;
+					ctx.translate(radius, radius);
+					radius = radius * 0.90
+					drawClock('one');
+
+					canvas = document.getElementById("canvas2");
+					ctx = canvas.getContext("2d");
+					ctx.clearRect(0,0,canvas.width,canvas.height);
+					canvas.width = 1; canvas.width = 400;
+					radius = canvas.height / 2;
+					ctx.translate(radius, radius);
+					radius = radius * 0.90
+					drawClock('two');
+					if (isNaN(firstTime) || isNaN(secondTime)) {
+						generateNewTime();
+						return false;
+					}
+
+					document.getElementById('hoursInput').value = "";
+					document.getElementById('minutesInput').value = "";
+					document.getElementById('hoursInput').focus();
+					document.getElementById('numberCount').innerHTML = parseInt(document.getElementById('numberCount').innerHTML) + 1;
+				}
+
+				function drawClock(clockNumber) {
+					drawFace(ctx, radius);
+					drawNumbers(ctx, radius);
+					drawTime(ctx, radius, clockNumber);
+				}
+
+				function drawFace(ctx, radius) {
+					var grad;
+					ctx.beginPath();
+					ctx.arc(0, 0, radius, 0, 2*Math.PI);
+					ctx.fillStyle = 'white';
+					ctx.fill();
+					grad = ctx.createRadialGradient(0,0,radius*0.95, 0,0,radius*1.05);
+					grad.addColorStop(0, '#333');
+					grad.addColorStop(0.5, 'white');
+					grad.addColorStop(1, '#333');
+					ctx.strokeStyle = grad;
+					ctx.lineWidth = radius*0.1;
+					ctx.stroke();
+					ctx.beginPath();
+					ctx.arc(0, 0, radius*0.1, 0, 2*Math.PI);
+					ctx.fillStyle = '#333';
+					ctx.fill();
+				}
+
+				function drawNumbers(ctx, radius) {
+					var ang;
+					var num;
+					ctx.font = radius*0.15 + "px arial";
+					ctx.textBaseline="middle";
+					ctx.textAlign="center";
+					for(num = 1; num < 13; num++){
+						ang = num * Math.PI / 6;
+						ctx.rotate(ang);
+						ctx.translate(0, -radius*0.85);
+						ctx.rotate(-ang);
+						ctx.fillText(num.toString(), 0, 0);
+						ctx.rotate(ang);
+						ctx.translate(0, radius*0.85);
+						ctx.rotate(-ang);
+					}
+				}
+
+				function drawTime(ctx, radius, clockNumber){
+					if (clockNumber == 'one') {
+						now = new Date(Math.min(firstTime, secondTime));
+					} else {
+						now = new Date(Math.max(firstTime, secondTime));
+					}
+					var hour = now.getHours();
+					var minute = roundup5(now.getMinutes());
+					//hour
+					hour=hour%12;
+					hour=(hour*Math.PI/6)+
+					(minute*Math.PI/(6*60));
+					drawHand(ctx, hour, radius*0.5, radius*0.07);
+					//minute
+					minute=(minute*Math.PI/30);
+					drawHand(ctx, minute, radius*0.8, radius*0.07);
+				}
+
+				function drawHand(ctx, pos, length, width) {
+					ctx.beginPath();
+					ctx.lineWidth = width;
+					ctx.lineCap = "round";
+					ctx.moveTo(0,0);
+					ctx.rotate(pos);
+					ctx.lineTo(0, -length);
+					ctx.stroke();
+					ctx.rotate(-pos);
+				}
+
+				function roundup5(x) {
+					return 5 * Math.round(x / 5);
+				}
+
+				function randomDate(start, end) {
+					return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+				}
+
+				function msToTime(duration) {
+					var milliseconds = parseInt((duration%1000)/100)
+						, seconds = parseInt((duration/1000)%60)
+						, minutes = parseInt((duration/(1000*60))%60);
+
+					minutes = (minutes < 10) ? "0" + minutes : minutes;
+					seconds = (seconds < 10) ? "0" + seconds : seconds;
+
+					return minutes + ":" + seconds + "." + milliseconds;
+				}
+
+				function checkAnswer() {
+					var userHours = document.getElementById('hoursInput').value;
+					var userMinutes = document.getElementById('minutesInput').value;
+
+					if (userHours == hh && userMinutes == mm) {
+						generateNewTime();
+					}
+				}
+			</script>
+
+	</body>
+</html>
